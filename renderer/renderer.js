@@ -276,4 +276,30 @@ document.addEventListener('DOMContentLoaded', () => {
         INVENTARIO = await inv_list();
         renderTabla();
     });
+// Función para recargar la lista de entregas
+async function cargarEntregas() {
+    if (!window.api || !document.getElementById('entregasList')) return;
+    const entregas = await window.api.historialList();
+    const entregasList = document.getElementById('entregasList');
+    entregasList.innerHTML = entregas.length
+        ? entregas.map(e => `<div>${e.fecha} - ${e.usuario} - ${e.correo}</div>`).join('')
+        : '<div>No hay entregas registradas.</div>';
+}
+
+// Botón para resetear historial de entregas
+const btnResetHistorial = document.getElementById('resetHistorialBtn');
+if (btnResetHistorial) {
+    btnResetHistorial.onclick = async () => {
+        if (confirm('¿Seguro que quieres borrar todo el historial de entregas?')) {
+            await window.api.resetHistorial();
+            alert('Historial borrado.');
+            cargarEntregas();
+        }
+    };
+}
+
+
+
+
+
     })();

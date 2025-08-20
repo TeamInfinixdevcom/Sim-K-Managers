@@ -2,6 +2,7 @@ const { ipcMain, BrowserWindow, app, dialog } = require('electron');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 const path = require('path');
+const { Worker } = require('worker_threads');
 
 // Rutas a los JSON junto al ejecutable
 const AGENTS_PATH = path.join(__dirname, 'agents.json');
@@ -20,9 +21,20 @@ async function readJSON(p, fallback) {
     try { return JSON.parse(await fsPromises.readFile(p, 'utf8')); }
     catch { return fallback; }
 }
-async function writeJSON(p, data) {
+async function writeJSONAsync(p, data) {
     await fsPromises.mkdir(path.dirname(p), { recursive: true });
-    await fsPromises.writeFile(p, JSON.stringify(data, null, 2), 'utf8');
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(`
+            const { parentPort, workerData } = require('worker_threads');
+            const fs = require('fs');
+            fs.writeFile(workerData.p, JSON.stringify(workerData.data, null, 2), 'utf8', err => {
+                if (err) parentPort.postMessage({ error: err });
+                else parentPort.postMessage({ ok: true });
+            });
+        `, { eval: true, workerData: { p, data } });
+        worker.on('message', msg => msg.ok ? resolve(true) : reject(msg.error));
+        worker.on('error', reject);
+    });
 }
 
 // ===== Supervisor (placeholder) =====
@@ -47,7 +59,7 @@ ipcMain.handle('agents:add', async (_evt, agent) => {
     const i = cfg.agents.findIndex(a => a.correo === agent.correo);
     if (i >= 0) cfg.agents[i] = { ...cfg.agents[i], ...agent };
     else cfg.agents.push(agent);
-    await writeJSON(AGENTS_PATH, cfg);
+    await writeJSONAsync(AGENTS_PATH, cfg);
     return { ok: true };
 });
 
@@ -55,7 +67,7 @@ ipcMain.handle('agents:remove', async (_evt, correo) => {
     const cfg = await readJSON(AGENTS_PATH, { defaultAgent: null, agents: [] });
     cfg.agents = (cfg.agents || []).filter(a => a.correo !== correo);
     if (cfg.defaultAgent?.correo === correo) cfg.defaultAgent = null;
-    await writeJSON(AGENTS_PATH, cfg);
+    await writeJSONAsync(AGENTS_PATH, cfg);
     return { ok: true };
 });
 
@@ -70,7 +82,7 @@ ipcMain.handle('terminales:add', async (_e, t) => {
     const idx = list.findIndex(x => key(x) === key(t));
     if (idx >= 0) list[idx] = { ...list[idx], ...t, disponible: Number(t.disponible) || 0 };
     else list.push({ ...t, disponible: Number(t.disponible) || 0 });
-    await writeJSON(TERMINALES_PATH, list);
+    await writeJSONAsync(TERMINALES_PATH, list);
     return { ok: true };
 });
 
@@ -78,14 +90,14 @@ ipcMain.handle('terminales:remove', async (_e, t) => {
     const list = await readJSON(TERMINALES_PATH, []);
     const key = x => `${x.agencia}__${x.marca}__${x.terminal}`.toLowerCase();
     const out = list.filter(x => key(x) !== key(t));
-    await writeJSON(TERMINALES_PATH, out);
+    await writeJSONAsync(TERMINALES_PATH, out);
     return { ok: true };
 });
 
 ipcMain.handle('terminales:bulkAdd', async (_e, bulk) => {
     if (!Array.isArray(bulk)) return { ok: false, error: 'Formato inválido' };
     const norm = bulk.map(t => ({ ...t, disponible: Number(t.disponible) || 0 }));
-    await writeJSON(TERMINALES_PATH, norm);
+    await writeJSONAsync(TERMINALES_PATH, norm);
     return { ok: true, count: norm.length };
 });
 
@@ -97,20 +109,20 @@ ipcMain.handle('notas:add', async (_e, nota) => {
     const notas = await readJSON(NOTAS_PATH, []);
     nota.id = Date.now().toString();
     notas.push(nota);
-    await writeJSON(NOTAS_PATH, notas);
+    await writeJSONAsync(NOTAS_PATH, notas);
     return { ok: true, id: nota.id };
 });
 ipcMain.handle('notas:edit', async (_e, nota) => {
     const notas = await readJSON(NOTAS_PATH, []);
     const idx = notas.findIndex(n => n.id === nota.id);
     if (idx >= 0) notas[idx] = nota;
-    await writeJSON(NOTAS_PATH, notas);
+    await writeJSONAsync(NOTAS_PATH, notas);
     return { ok: idx >= 0 };
 });
 ipcMain.handle('notas:remove', async (_e, id) => {
     const notas = await readJSON(NOTAS_PATH, []);
     const out = notas.filter(n => n.id !== id);
-    await writeJSON(NOTAS_PATH, out);
+    await writeJSONAsync(NOTAS_PATH, out);
     return { ok: true };
 });
 
@@ -140,7 +152,7 @@ ipcMain.handle('sims:generateSend', async (_e, payload) => {
 
         await fsPromises.writeFile(filePath, pdfBuffer);
 
-        await agregarHistorialEntrega({
+        await agregarHistorialEntregaAsync({
             agente: payload.agente,
             usuario: payload.usuario,
             correo: payload.correo,
@@ -157,10 +169,10 @@ ipcMain.handle('sims:generateSend', async (_e, payload) => {
 });
 
 // ===== Historial de entregas =====
-async function agregarHistorialEntrega(entrega) {
+async function agregarHistorialEntregaAsync(entrega) {
     const historial = await readJSON(HISTORIAL_PATH, []);
     historial.push({ ...entrega, id: Date.now().toString() });
-    await writeJSON(HISTORIAL_PATH, historial);
+    await writeJSONAsync(HISTORIAL_PATH, historial);
 }
 
 // Filtrar historial por correo
@@ -428,4 +440,4 @@ function esc(s) {
     return String(s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 }
 
-console.log('Handlers IPC listos (supervisor, agentes, terminales, SIM->PDF Kolbi, historial)');
+console.log('Handlers IPC listos (supervisor, agentes, terminales, SIM->PDF Kolbi, historial por correo)');
