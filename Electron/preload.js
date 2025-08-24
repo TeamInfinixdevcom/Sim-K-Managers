@@ -16,5 +16,11 @@
     bulkAddTerminales: (terminalesBulk) => ipcRenderer.invoke('terminales:bulkAdd', terminalesBulk),
 
     // SIM -> PDF / Envío
-    generateAndSendSIM: (payload) => ipcRenderer.invoke('sims:generateSend', payload)
+    generateAndSendSIM: (payload) => ipcRenderer.invoke('sims:generateSend', payload),
+
+
+    listHistorial: () => ipcRenderer.invoke('historial:list'),
+    resetHistorial: () => ipcRenderer.invoke('resetHistorial'),
+    generarHistorialPdf: (correo) => ipcRenderer.invoke('historial:pdf', correo),
+
     });

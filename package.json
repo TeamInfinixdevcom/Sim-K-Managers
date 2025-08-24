@@ -5,11 +5,11 @@
         "main": "Electron/main.js",
         "author": "Ruben Madrigal Jimenez",
         "license": "MIT",
-        "scripts": {
-            "start": "electron .",
-            "dev": "electron .",
-            "postinstall": "electron-builder install-app-deps"
-        },
+            "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder"
+    },
         "dependencies": {},
         "devDependencies": {
             "electron": "^30.0.0",

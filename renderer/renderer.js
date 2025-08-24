@@ -298,8 +298,49 @@ if (btnResetHistorial) {
     };
 }
 
+let usuarioCorreo = null;
 
+// Función para guardar el correo del usuario logueado
+window.setUsuarioCorreo = function(correo) {
+    usuarioCorreo = correo;
+    mostrarFirmaPorCorreo(correo);
+};
 
+function mostrarFirmaPorCorreo(correo) {
+    let firmaSrc;
+    if (correo === "msanabria@ice.go.cr") {
+        firmaSrc = "../Electron/fima_supervisora.jpg";
+    } else if (correo === "emondragon@ice.go.cr") {
+        firmaSrc = "../Electron/firmasupervisor.jpg";
+    } else {
+        firmaSrc = "../Electron/firmasupervisor.jpg";
+    }
+    const firmaImg = document.getElementById("firma-supervisor-img");
+    if (firmaImg) {
+        firmaImg.src = firmaSrc;
+        firmaImg.alt = `Firma de ${correo}`;
+    }
+}
 
+// Cuando generes el PDF, asegúrate de enviar el correo
+async function generarPDFEntrega(data) {
+    // ...existing code...
+    await window.api.generarPDFEntrega(data, usuarioCorreo);
+    // ...existing code...
+}
+
+// Lógica de login
+const btnLogin = document.getElementById('btnLogin');
+if (btnLogin) {
+    btnLogin.addEventListener('click', async () => {
+        const correoInput = document.getElementById('correoSupervisor');
+        const correo = correoInput ? correoInput.value.trim() : '';
+        // ...existing code para validar y autenticar...
+        if (correo) {
+            window.setUsuarioCorreo(correo); // Actualiza la firma al loguear
+        }
+        // ...existing code...
+    });
+}
 
     })();

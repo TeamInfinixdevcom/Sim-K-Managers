@@ -240,17 +240,37 @@ document.getElementById('btnLogin').onclick = async function() {
     if (!correo || !clave) return alert('Ingrese el correo y la clave');
     const result = await window.electronAPI.authSupervisor({ email: correo, password: clave });
     if (result.ok) {
-    supervisorAutenticado = true;
-    setSimsGuard(true);
-    document.getElementById('supEstado').textContent = 'Autenticado como ' + correo;
-    habilitarTerminales(true);
+        supervisorAutenticado = true;
+        setSimsGuard(true);
+        document.getElementById('supEstado').textContent = 'Autenticado como ' + correo;
+        habilitarTerminales(true);
+        
+        // Cambiar firma según el correo
+        actualizarFirmaSupervisor(correo);
     } else {
-    supervisorAutenticado = false;
-    setSimsGuard(false);
-    habilitarTerminales(false);
-    alert('Correo o clave incorrectos');
+        supervisorAutenticado = false;
+        setSimsGuard(false);
+        habilitarTerminales(false);
+        alert('Correo o clave incorrectos');
     }
 };
+
+// Función para actualizar la firma según el correo
+function actualizarFirmaSupervisor(correo) {
+    // Establecer imagen de firma según el correo del supervisor
+    const imgFirma = document.getElementById('imgFirmaFija');
+    const imgPreview = document.getElementById('imgFirmaFijaPreview');
+    
+    if (correo.toLowerCase() === "msanabria@ice.go.cr") {
+        console.log('UI: Usando firma de MSanabria');
+        imgFirma.src = "./fima_supervisora.jpg";
+        imgPreview.src = "./fima_supervisora.jpg";
+    } else {
+        console.log('UI: Usando firma predeterminada');
+        imgFirma.src = "./firmasupervisor.jpg";
+        imgPreview.src = "./firmasupervisor.jpg";
+    }
+}
 document.getElementById('btnLogoff').onclick = function() {
     supervisorAutenticado = false;
     setSimsGuard(false);
@@ -339,7 +359,7 @@ document.getElementById('btnGenerar').onclick = async function() {
     correo:   document.getElementById('correo').value.trim(),
     fecha:    document.getElementById('miniDate').value,
     contenido:document.getElementById('contenido').value,
-    firmaPath: "./firmasupervisor.jpg"
+    supervisorCorreo: document.getElementById('supCorreo').value.trim() // Enviar el correo del supervisor
     };
 
     const res = await window.electronAPI.generateAndSendSIM(payload);

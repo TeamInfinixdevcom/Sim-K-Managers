@@ -8,7 +8,8 @@ const { Worker } = require('worker_threads');
 const AGENTS_PATH = path.join(__dirname, 'agents.json');
 const TERMINALES_PATH = path.join(__dirname, 'terminales.json');
 const KOLBI_LOGO_PATH = path.join(__dirname, 'kolbi.png');
-const FIRMA_PATH = path.join(__dirname, 'firmasupervisor.jpg');
+const FIRMA_SUPERVISOR_PATH = path.join(__dirname, 'firmasupervisor.jpg');
+const FIRMA_SUPERVISORA_PATH = path.join(__dirname, 'fima_supervisora.jpg');
 const HISTORIAL_PATH = path.join(__dirname, 'historial_entregas.json');
 const NOTAS_PATH = path.join(__dirname, 'notas.json');
 
@@ -127,9 +128,19 @@ ipcMain.handle('notas:remove', async (_e, id) => {
 });
 
 // ===== SIM -> Generar PDF y guardar historial =====
-ipcMain.handle('sims:generateSend', async (_e, payload) => {
+ipcMain.handle('sims:generateSend', async (_evt, payload) => {
     try {
-        const html = await buildSIMHtmlKolbi(payload);
+        console.log(`Generando PDF para usuario: ${payload.usuario}, correo: ${payload.correo}`);
+        
+        // Obtener el path de la firma según el correo del SUPERVISOR
+        const supervisorCorreo = payload.supervisorCorreo;
+        console.log(`Correo del supervisor: ${supervisorCorreo}`);
+        
+        const firmaPath = getFirmaPath(supervisorCorreo);
+        console.log(`Usando firma: ${firmaPath}`);
+        
+        // Pasar firmaPath a buildSIMHtmlKolbi
+        const html = await buildSIMHtmlKolbi({ ...payload, firmaPath });
         const pdfWin = new BrowserWindow({ show: false });
         await pdfWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
 
@@ -164,6 +175,7 @@ ipcMain.handle('sims:generateSend', async (_e, payload) => {
 
         return { ok: true, path: filePath, sent: false };
     } catch (err) {
+        console.error('Error al generar PDF:', err);
         return { ok: false, error: String(err) };
     }
 });
@@ -223,8 +235,8 @@ async function buildSIMHtmlKolbi({ agente, usuario, correo, fecha, contenido, fi
     const logoKolbi = fs.existsSync(KOLBI_LOGO_PATH)
         ? 'data:image/png;base64,' + fs.readFileSync(KOLBI_LOGO_PATH).toString('base64')
         : '';
-    const firmaSupervisor = fs.existsSync(FIRMA_PATH)
-        ? 'data:image/jpeg;base64,' + fs.readFileSync(FIRMA_PATH).toString('base64')
+    const firmaSupervisor = fs.existsSync(firmaPath)
+        ? 'data:image/jpeg;base64,' + fs.readFileSync(firmaPath).toString('base64')
         : '';
     const hora = new Date().toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     return `<!doctype html>
@@ -440,4 +452,34 @@ function esc(s) {
     return String(s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 }
 
+function getFirmaPath(correo) {
+    console.log(`Seleccionando firma para correo: ${correo}`);
+    
+    if (!correo || typeof correo !== 'string') {
+        console.warn('Correo no válido, usando firma por defecto');
+        return FIRMA_SUPERVISOR_PATH;
+    }
+    
+    if (correo.toLowerCase() === "msanabria@ice.go.cr") {
+        console.log('Usando firma de supervisora (MSanabria)');
+        const firmaPath = FIRMA_SUPERVISORA_PATH;
+        
+        // Verificar que el archivo exista
+        if (!fs.existsSync(firmaPath)) {
+            console.warn(`¡Archivo de firma no encontrado en: ${firmaPath}!`);
+            return FIRMA_SUPERVISOR_PATH; // Usar firma por defecto si no existe
+        }
+        
+        return firmaPath;
+    } else if (correo.toLowerCase() === "emondragon@ice.go.cr") {
+        console.log('Usando firma de supervisor (EMondragon)');
+        return FIRMA_SUPERVISOR_PATH;
+    } else {
+        console.log(`Usando firma por defecto para: ${correo}`);
+        return FIRMA_SUPERVISOR_PATH; // Firma por defecto
+    }
+}
+
 console.log('Handlers IPC listos (supervisor, agentes, terminales, SIM->PDF Kolbi, historial por correo)');
+// La generación de PDF ya está implementada en sims:generateSend
+// que utiliza la función getFirmaPath para seleccionar la firma adecuada
