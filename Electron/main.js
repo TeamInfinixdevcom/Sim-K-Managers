@@ -112,11 +112,8 @@ function createWindow() {
         }
     }, 2000); // Retraso para evitar problemas de inicialización
 
-    // Abrir DevTools en desarrollo
-    if (process.env.NODE_ENV === 'development') {
-        mainWindow.webContents.openDevTools();
-    } else {
-        // Siempre abrir DevTools por ahora para depuración
+    // Abrir DevTools solo en desarrollo o si se fuerza por variable
+    if (process.env.NODE_ENV === 'development' || process.env.SHOW_DEVTOOLS === '1') {
         mainWindow.webContents.openDevTools();
     }
     

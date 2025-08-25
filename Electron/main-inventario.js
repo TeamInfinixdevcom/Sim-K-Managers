@@ -642,12 +642,23 @@ ipcMain.handle('sims:generateSend', async (_evt, payload) => {
             TURBOCACHE.data.logos['kolbi'] = logoKolbiBase64;
         }
         
+        // Derivar nombre del supervisor a partir del correo
+        const supCorreo = (payload.supervisorCorreo || '').toLowerCase();
+        let supNombre = supCorreo;
+        if (supCorreo === 'msanabria@ice.go.cr') {
+            supNombre = 'Supervisora Maria Jose Sanabria';
+        } else if (supCorreo === 'emonadragon@ice.go.cr') {
+            supNombre = 'Supervisor Esteban Mondragon';
+        }
+        const leyendaSupervisor = `${supNombre} entrega las SIMs al agente ${payload.agente || payload.usuario || '—'}`;
+        
         // Pasar firmaPath a buildSIMHtmlKolbi con optimizaciones
         const startTime = Date.now();
         const html = await buildOptimizedSIMHtmlKolbi({ 
             ...payload, 
             logoBase64: logoKolbiBase64,
-            firmaBase64: firmaSupervisorBase64
+            firmaBase64: firmaSupervisorBase64,
+            leyendaSupervisor
         });
         
         // Crear ventana offscreen para mejor rendimiento
@@ -853,7 +864,7 @@ ipcMain.handle('historial:pdf', async (_e, correo) => {
 });
 
 // ===== HTML para PDF Kolbi (optimizado) =====
-async function buildOptimizedSIMHtmlKolbi({ agente, usuario, correo, fecha, contenido, logoBase64, firmaBase64 }) {
+async function buildOptimizedSIMHtmlKolbi({ agente, usuario, correo, fecha, contenido, logoBase64, firmaBase64, leyendaSupervisor }) {
     const hora = new Date().toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const logoHtml = logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" alt="Kolbi" />` : '';
     const firmaHtml = firmaBase64 ? `<img class="firma-img" src="data:image/jpeg;base64,${firmaBase64}" alt="firma" />` : '';
@@ -950,7 +961,7 @@ pre {
     </div>
     <div class="eslogan">#somos de los mismos</div>
     <div class="leyenda">
-        Se hace constar que el supervisor <b>${esc(agente)}</b> entrega las siguientes SIMs físicas el <b>${esc(fecha)}</b> a las <b>${hora}</b>.
+        Se hace constar que el supervisor entrega las siguientes SIMs físicas a ${agente} el ${fecha} a las ${hora}.
     </div>
     <div class="grid">
         <div class="box"><b>Agente:</b> ${esc(agente)}</div>
@@ -1193,7 +1204,7 @@ pre {
     </div>
     <div class="eslogan">#somos de los mismos</div>
     <div class="leyenda">
-        Se hace constar que el supervisor <b>${esc(agente)}</b> entrega las siguientes SIMs físicas el <b>${esc(fecha)}</b> a las <b>${hora}</b>.
+        Se hace constar que el supervisor entrega las siguientes SIMs físicas a ${agente} el ${fecha} a las ${hora}.
     </div>
     <div class="grid">
         <div class="box"><b>Agente:</b> ${esc(agente)}</div>
@@ -1361,6 +1372,18 @@ function getFirmaPath(correo) {
         console.log(`[FIRMA] Usando firma por defecto para: ${correo}`);
         return FIRMA_SUPERVISOR_PATH; // Firma por defecto
     }
+}
+
+// Helper para mostrar nombre/título de supervisor según correo
+function getSupervisorDisplay(email = '') {
+    const e = String(email || '').toLowerCase();
+    if (e === 'msanabria@ice.go.cr') {
+        return { titulo: 'Supervisora', nombre: 'Maria Jose Sanabria' };
+    }
+    if (e === 'emonadragon@ice.go.cr') {
+        return { titulo: 'Supervisor', nombre: 'Esteban Mondragon' };
+    }
+    return { titulo: 'Supervisor', nombre: email || '—' };
 }
 
 // Registrar todos los manejadores IPC
