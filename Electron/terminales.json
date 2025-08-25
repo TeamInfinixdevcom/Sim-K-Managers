@@ -1,44 +1,14 @@
 [
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG BANDA FIT3 ORO ROSA",
-    "disponible": 1
+    "marca": "OPPO",
+    "terminal": "OPPO A5 PRO 5G 256GB CAFÉ",
+    "disponible": 17
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG BANDA FIT3 PLATEADO",
-    "disponible": 2
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG BUDS FE BLANCO",
-    "disponible": 1
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG BUDS3 PRO BLANCO",
-    "disponible": 1
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG CUBO DE CARGA 25W BLANCO",
-    "disponible": 2
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG CUBO DE CARGA 25W NEGRO",
-    "disponible": 5
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "SAMSUNG",
-    "terminal": "SAMSUNG CUBO DE CARGA 45W NEGRO",
-    "disponible": 4
+    "marca": "OPPO",
+    "terminal": "OPPO A5 PRO 5G 256GB ROSA",
+    "disponible": 6
   }
 ]
