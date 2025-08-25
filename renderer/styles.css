@@ -206,3 +206,111 @@ canvas { width: 100%; max-width: 700px; height: auto; background: #fff; border-r
     .card.paper { background: #fff; border: 1px solid #e5e7eb; }
         input, textarea, select { border: 0 !important; }
     }
+
+/* Estilos principales para SimKManager */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#app {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Estilos de la barra superior */
+.topbar {
+    background: #43b02a; 
+    padding: 0;
+}
+
+.topbar-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.topbar-logo {
+    height: 32px;
+    margin-right: 8px;
+}
+
+.topbar-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 180px;
+}
+
+/* Formularios */
+label.date-label {
+    margin-right: 6px;
+}
+
+.note-container {
+    margin-top: 8px;
+}
+
+/* Imágenes */
+.firma-img {
+    max-width: 300px;
+    max-height: 120px;
+}
+
+/* Contenedores */
+.margin-bottom {
+    margin-bottom: 10px;
+}
+
+.margin-top {
+    margin-top: 6px;
+}
+
+/* Entradas */
+.search-input {
+    max-width: 260px;
+}
+
+/* Tablas */
+.inventory-table {
+    width: 100%; 
+    border-collapse: collapse;
+}
+
+.table-cell-left {
+    text-align: left; 
+    padding: 8px 6px;
+}
+
+.table-cell-right {
+    text-align: right; 
+    padding: 8px 6px;
+}
+
+/* Botones */
+.reset-button {
+    margin-top: 16px;
+    background: #c00;
+    color: #fff;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Layout */
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.gap {
+    gap: 10px;
+}

@@ -1,17 +1,62 @@
-// Preload script con corrección de nombres de funciones
+// Script para mostrar el contenido real del archivo preload.js
+const fs = require('fs');
+const path = require('path');
+
+const electronDir = path.join(__dirname, 'Electron');
+const preloadPath = path.join(electronDir, 'preload.js');
+
+console.log(`Verificando preload.js en ${preloadPath}...`);
+
+try {
+  if (!fs.existsSync(preloadPath)) {
+    console.error(`ERROR: El archivo preload.js no existe en ${preloadPath}`);
+    process.exit(1);
+  }
+  
+  const contenido = fs.readFileSync(preloadPath, 'utf8');
+  
+  console.log('---- CONTENIDO DEL ARCHIVO preload.js ----');
+  console.log(contenido);
+  console.log('---- FIN DEL CONTENIDO ----');
+  
+  // Analizar línea por línea
+  console.log('\n---- ANÁLISIS LÍNEA POR LÍNEA ----');
+  const lineas = contenido.split('\n');
+  console.log(`Total de líneas: ${lineas.length}`);
+  
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i].trim();
+    if (linea.includes(':') && linea.includes('=>')) {
+      console.log(`Línea ${i+1}: ${linea} (POSIBLE FUNCIÓN)`);
+    } else if (linea.length > 0) {
+      console.log(`Línea ${i+1}: ${linea}`);
+    }
+  }
+  
+} catch (err) {
+  console.error('Error al leer el archivo:', err);
+}
+
+// Ahora vamos a reescribir el preload.js directamente
+console.log('\n---- CREANDO NUEVO ARCHIVO preload.js ----');
+
+try {
+  // Crear backup
+  const backupPath = path.join(electronDir, `preload-backup-manual-${Date.now()}.js`);
+  fs.copyFileSync(preloadPath, backupPath);
+  console.log(`Backup creado en: ${backupPath}`);
+  
+  // Contenido correcto del preload.js
+  const nuevoContenido = `// Preload script con corrección de nombres de funciones
 const { contextBridge, ipcRenderer } = require('electron');
 
 // Exponer APIs protegidas al front-end
 contextBridge.exposeInMainWorld('electronAPI', {
-    // API para autenticación
-    login: (email, password) => {
-      console.log('Preload: Invocando supervisor:auth con email:', email);
-      return ipcRenderer.invoke('supervisor:auth', { email, password });
-    },
-    authSupervisor: (email, password) => {
-      console.log('Preload: Invocando supervisor:auth con email:', email);
-      return ipcRenderer.invoke('supervisor:auth', { email, password });
-    },  // API para terminales
+  // API para autenticación
+  login: (email, password) => ipcRenderer.invoke('supervisor:auth', { email, password }),
+  authSupervisor: (email, password) => ipcRenderer.invoke('supervisor:auth', { email, password }),
+  
+  // API para terminales
   listarTerminales: () => ipcRenderer.invoke('terminales:list'),
   listTerminales: () => ipcRenderer.invoke('terminales:list'),
   agregarTerminal: (t) => ipcRenderer.invoke('terminales:add', t),
@@ -58,4 +103,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   precargarDatos: () => ipcRenderer.invoke('sistema:precargar'),
   estadisticasCache: () => ipcRenderer.invoke('sistema:estadisticasCache'),
   monitorSnapshot: () => ipcRenderer.invoke('sistema:monitorSnapshot')
-});
+});`;
+
+  // Escribir el nuevo contenido
+  fs.writeFileSync(preloadPath, nuevoContenido);
+  console.log('Archivo preload.js reescrito correctamente');
+  console.log('Por favor reinicia la aplicación Electron para aplicar los cambios');
+  
+} catch (err) {
+  console.error('Error al reescribir el archivo:', err);
+}

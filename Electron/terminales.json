@@ -1,104 +1,44 @@
 [
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 15 ROSADO 128GB",
-    "disponible": 10
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG BANDA FIT3 ORO ROSA",
+    "disponible": 1
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 128GB BLANCO",
-    "disponible": 10
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 128GB NEGRO",
-    "disponible": 12
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 128GB ROSA",
-    "disponible": 3
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 128GB ULTRAMARINO",
-    "disponible": 9
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 256GB BLANCO",
-    "disponible": 5
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 256GB NEGRO",
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG BANDA FIT3 PLATEADO",
     "disponible": 2
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 256GB ULTRAMARINO",
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG BUDS FE BLANCO",
     "disponible": 1
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 256GB VERDE AZULADO",
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG BUDS3 PRO BLANCO",
     "disponible": 1
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 PLUS 128GB ULTRAMARINO",
-    "disponible": 6
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG CUBO DE CARGA 25W BLANCO",
+    "disponible": 2
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 PLUS 256GB ULTRAMARINO",
-    "disponible": 1
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG CUBO DE CARGA 25W NEGRO",
+    "disponible": 5
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 PRO 128GB TITANIO NATURAL",
-    "disponible": 3
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 PRO 128GB TITANIO NEGRO",
-    "disponible": 6
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 PRO MAX 256GB TITANIO BLANCO",
-    "disponible": 16
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16 PRO MAX 256GB TITANIO NEGRO",
-    "disponible": 14
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16E 128GB BLANCO",
-    "disponible": 3
-  },
-  {
-    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "APPLE",
-    "terminal": "IPHONE 16E 128GB NEGRO",
-    "disponible": 1
+    "marca": "SAMSUNG",
+    "terminal": "SAMSUNG CUBO DE CARGA 45W NEGRO",
+    "disponible": 4
   }
 ]

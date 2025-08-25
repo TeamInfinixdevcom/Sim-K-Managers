@@ -1,0 +1,14 @@
+{
+  "fecha": "2025-08-25T05:03:14.671Z",
+  "sistemaMonitorSnapshot": 0,
+  "handlers": {
+    "sistema:invalidarCache": 0,
+    "sistema:precargar": 0,
+    "sistema:estadisticasCache": 0,
+    "terminales:list": 0,
+    "terminales:add": 0,
+    "terminales:remove": 0,
+    "terminales:bulkAdd": 0,
+    "historial:reset": 0
+  }
+}

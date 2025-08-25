@@ -5,11 +5,81 @@
 <title>Entrega de SIMs Físicas Kolbi</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:;">
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="stylesheet" href="../renderer/styles.css">
-<link rel="stylesheet" href="../renderer/neon.css">
-<link rel="icon" href="./kolbi.png" type="image/png">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+    <title>SIM KManager - Sistema de Inventario</title>
+    <link rel="stylesheet" href="../renderer/styles.css">
+    <link rel="stylesheet" href="../renderer/neon.css">
+    <link rel="icon" href="./kolbi.png" type="image/png">
 </head>
 <body>
+    <div id="app">
+        <h1>SIM KManager - Sistema de Inventario</h1>
+        <p>El sistema está iniciando...</p>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', async () => {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                statusEl.textContent = 'Verificando API de Electron...';
+                
+                if (!window.electronAPI) {
+                    throw new Error('API de Electron no disponible. Verifica la configuración de preload.js.');
+                }
+                
+                statusEl.textContent = 'Cargando herramientas...';
+                
+                // Cargar los scripts de forma dinámica después de que la API esté disponible
+                const scripts = [
+                    './dom-protector.js', // Protección DOM primero
+                    './missing-functions-polyfill.js', // Polyfills para funciones faltantes
+                    './compatibility-adapter.js', // Luego el adaptador de compatibilidad
+                    './index-patches.js', // Parches específicos para index.html
+                    './terminal-helpers.js',
+                    './precargador.js',
+                    './cache-tools.js'
+                ];
+                
+                // Cargar scripts en orden
+                for (let i = 0; i < scripts.length; i++) {
+                    const scriptSrc = scripts[i];
+                    await new Promise((resolve) => {
+                        const script = document.createElement('script');
+                        script.src = scriptSrc;
+                        script.onload = resolve;
+                        script.onerror = resolve; // Continuar incluso si hay error
+                        document.head.appendChild(script);
+                        console.log(`Cargando script: ${scriptSrc}`);
+                    });
+                }
+                
+                statusEl.textContent = 'Precargando datos...';
+                
+                try {
+                    const result = await window.electronAPI.precargar();
+                    if (result && result.ok) {
+                        statusEl.textContent = 'Datos precargados correctamente.';
+                    } else {
+                        statusEl.textContent = 'Error en precarga: ' + (result?.error || 'Error desconocido');
+                    }
+                } catch (err) {
+                    statusEl.textContent = 'Error en precarga: ' + err.message;
+                }
+                
+            } catch (err) {
+                statusEl.textContent = 'Error: ' + err.message;
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
 <main class="shell">
     <header class="topbar" style="background:#43b02a; padding:0;">
     <div class="kolbi-header-row">
@@ -173,10 +243,22 @@
         <label>Filtrar por correo:
             <input id="filtroCorreo" placeholder="Correo del agente" />
         </label>
-            <button id="resetHistorialBtn" style="margin-top:16px;background:#c00;color:#fff;padding:8px 18px;border:none;border-radius:6px;cursor:pointer;">
-                🗑️ Resetear historial de entregas
-            </button>
-            <button id="btnHistorialPdf" class="btn btn-outline">Generar PDF de historial</button>
+        <button id="resetHistorialBtn" style="margin-top:16px;background:#c00;color:#fff;padding:8px 18px;border:none;border-radius:6px;cursor:pointer;">
+            🗑️ Resetear historial de entregas
+        </button>
+        <button id="btnHistorialPdf" class="btn btn-outline">Generar PDF de historial</button>
+    </section>
+    
+    <!-- Sección de notas que faltaba -->
+    <section class="card glass">
+        <h2 class="card-title">Notas del supervisor</h2>
+        <div style="margin-bottom:10px">
+            <label class="full">Agregar nueva nota:
+                <textarea id="notaNueva" rows="3" placeholder="Escribe tu nota aquí..."></textarea>
+            </label>
+            <button id="btnAgregarNota" class="btn btn-outline" style="margin-top:6px">Guardar nota</button>
+        </div>
+        <div id="notasList"></div>
     </section>
 </section>
 
@@ -195,6 +277,20 @@
     </section>
 </section>
 </main>
+
+<!-- Botones de diagnóstico y reparación (ocultos) -->
+<div style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
+  <button id="btnDiagnostico" title="Diagnóstico del Sistema" 
+          style="background: #303030; color: #fff; border: 1px solid #444; padding: 5px; cursor: pointer; margin-right: 5px;"
+          onclick="ejecutarDiagnostico()">
+    🔍 Diag
+  </button>
+  <button id="btnActualizarPreload" title="Actualizar preload.js (requiere reinicio)" 
+          style="background: #303030; color: #fff; border: 1px solid #444; padding: 5px; cursor: pointer;"
+          onclick="crearNuevoPreload()">
+    🔄 Fix
+  </button>
+</div>
 
 <script>
 // Tabs
@@ -238,15 +334,19 @@ document.getElementById('btnLogin').onclick = async function() {
     const correo = document.getElementById('supCorreo').value.trim();
     const clave  = document.getElementById('supClave').value.trim();
     if (!correo || !clave) return alert('Ingrese el correo y la clave');
-    const result = await window.electronAPI.authSupervisor({ email: correo, password: clave });
+    // Corregido: pasar parámetros (correo, clave) en lugar de un objeto
+    const result = await window.electronAPI.authSupervisor(correo, clave);
     if (result.ok) {
         supervisorAutenticado = true;
         setSimsGuard(true);
         document.getElementById('supEstado').textContent = 'Autenticado como ' + correo;
         habilitarTerminales(true);
-        
         // Cambiar firma según el correo
         actualizarFirmaSupervisor(correo);
+        // Mensaje de bienvenida personalizado si está disponible
+        if (typeof mostrarMensajeAutenticacion === 'function') {
+            mostrarMensajeAutenticacion(correo);
+        }
     } else {
         supervisorAutenticado = false;
         setSimsGuard(false);
@@ -370,28 +470,102 @@ document.getElementById('btnGenerar').onclick = async function() {
 // ===== Inventario (carga/render básicos) =====
 let terminalesData = [];
 async function cargarTerminales() {
-    const result = await window.electronAPI.listTerminales();
-    terminalesData = Array.isArray(result) ? result : [];
-    renderInventarioTerminales();
-    actualizarFechaInventario();
+    try {
+        console.log('Solicitando terminales al backend...');
+        // Mostrar estado de carga en la interfaz
+        document.getElementById('invFechaTag').textContent = 'Cargando...';
+        
+        // Solicitar datos al backend
+        const result = await window.electronAPI.listTerminales();
+        
+        // Validar resultado
+        if (!Array.isArray(result)) {
+            console.error('Respuesta inválida al cargar terminales:', result);
+            document.getElementById('invFechaTag').textContent = 'Error de formato';
+            return;
+        }
+        
+        // Actualizar datos
+        terminalesData = result;
+        console.log(`${terminalesData.length} terminales cargadas`);
+        
+        // Renderizar datos en la tabla
+        const filterBrand = document.querySelector('.btn.btn-ghost.active')?.dataset?.brand || 'all';
+        const searchTerm = document.getElementById('invBuscar')?.value || '';
+        renderInventarioTerminales(filterBrand, searchTerm);
+        
+        // Actualizar estado
+        actualizarFechaInventario();
+        
+    } catch (err) {
+        console.error('Error al cargar terminales:', err);
+        document.getElementById('invFechaTag').textContent = 'Error: ' + (err.message || 'desconocido');
+        // Limpiar tabla en caso de error
+        document.querySelector('#tablaInventario tbody').innerHTML = 
+            '<tr><td colspan="4" style="color:red;text-align:center;padding:15px;">Error al cargar datos</td></tr>';
+    }
 }
-
 function renderInventarioTerminales(filterBrand = 'all', search = '') {
     const tbody = document.querySelector('#tablaInventario tbody');
+    // Limpiar la tabla antes de actualizar
     tbody.innerHTML = '';
-    const terminos = terminalesData.filter(t => {
-        const brandOk = filterBrand === 'all' || (t.marca && t.marca.toLowerCase() === filterBrand.toLowerCase());
-        const textOk  = !search || (t.terminal || '').toLowerCase().includes(search.toLowerCase());
-        return brandOk && textOk;
-    });
-    for (const t of terminos) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="padding:6px;">${t.agencia || ''}</td>
-            <td style="padding:6px;">${t.marca || ''}</td>
-            <td style="padding:6px;">${t.terminal || ''}</td>
-            <td style="padding:6px; text-align:right;">${Number(t.disponible)||0}</td>`;
-        tbody.appendChild(tr);
+    
+    // Mostrar indicador de carga
+    const loadingRow = document.createElement('tr');
+    loadingRow.innerHTML = '<td colspan="4" style="text-align:center;padding:15px;">Cargando terminales...</td>';
+    tbody.appendChild(loadingRow);
+    
+    try {
+        // Filtrar terminales según criterios
+        const terminos = terminalesData.filter(t => {
+            if (!t || typeof t !== 'object') return false; // Validar entradas
+            
+            const brandOk = filterBrand === 'all' || 
+                (t.marca && t.marca.toLowerCase() === filterBrand.toLowerCase());
+                
+            const searchLower = (search || '').toLowerCase();
+            const textOk = !searchLower || 
+                (t.terminal && t.terminal.toLowerCase().includes(searchLower)) ||
+                (t.marca && t.marca.toLowerCase().includes(searchLower)) ||
+                (t.agencia && t.agencia.toLowerCase().includes(searchLower));
+                
+            return brandOk && textOk;
+        });
+        
+        // Limpiar el mensaje de carga
+        tbody.innerHTML = '';
+        
+        // Si no hay resultados después del filtrado
+        if (terminos.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="4" style="text-align:center;padding:15px;">No hay terminales que coincidan con los filtros</td>';
+            tbody.appendChild(emptyRow);
+            return;
+        }
+        
+        // Renderizar las filas de la tabla
+        for (const t of terminos) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:6px;">${t.agencia || ''}</td>
+                <td style="padding:6px;">${t.marca || ''}</td>
+                <td style="padding:6px;">${t.terminal || ''}</td>
+                <td style="padding:6px; text-align:right;">${Number(t.disponible) || 0}</td>`;
+            tbody.appendChild(tr);
+        }
+        
+        // Mostrar total filtrado vs total en bruto
+        if (terminos.length < terminalesData.length) {
+            const footerRow = document.createElement('tr');
+            footerRow.innerHTML = `<td colspan="4" style="text-align:right;padding:10px;font-size:0.9em;">
+                Mostrando ${terminos.length} de ${terminalesData.length} terminales
+            </td>`;
+            tbody.appendChild(footerRow);
+        }
+        
+    } catch (err) {
+        console.error('Error al renderizar terminales:', err);
+        tbody.innerHTML = '<td colspan="4" style="text-align:center;color:#c00;padding:15px;">Error al mostrar las terminales</td>';
     }
 }
 function actualizarFechaInventario() {
@@ -400,16 +574,69 @@ function actualizarFechaInventario() {
 }
 
 document.getElementById('btnCargarTerminales').onclick = async () => {
-    const txt = document.getElementById('terminalesPaste').value.trim();
-    if (!txt) return;
-    const rows = txt.split(/\r?\n/).map(line => line.split('\t').map(v => v.trim()));
-    const bulk = rows
-        .filter(r => r.length >= 4)
-        .map(([agencia, marca, terminal, disponible]) => ({
-            agencia, marca, terminal, disponible: Number(disponible) || 0
-        }));
-    const res = await window.electronAPI.bulkAddTerminales(bulk);
-    if (res?.ok) { await cargarTerminales(); alert(`Cargados ${res.count} registros`); }
+    try {
+        // Obtener texto pegado
+        const txt = document.getElementById('terminalesPaste').value.trim();
+        if (!txt) {
+            alert('No hay datos para cargar. Por favor, pegue los datos en formato: Agencia,Marca,Terminal,Disponible');
+            return;
+        }
+        
+        // Mostrar procesamiento
+        document.getElementById('btnCargarTerminales').textContent = 'Procesando...';
+        document.getElementById('btnCargarTerminales').disabled = true;
+        
+        // Analizar filas
+        let rows;
+        if (txt.includes('\t')) {
+            // Formato con tabuladores
+            rows = txt.split(/\r?\n/).map(line => line.split('\t').map(v => v.trim()));
+        } else if (txt.includes(',')) {
+            // Formato CSV
+            rows = txt.split(/\r?\n/).map(line => line.split(',').map(v => v.trim()));
+        } else {
+            alert('Formato no reconocido. Use tabuladores o comas para separar los campos.');
+            document.getElementById('btnCargarTerminales').textContent = 'Cargar terminales';
+            document.getElementById('btnCargarTerminales').disabled = false;
+            return;
+        }
+        
+        // Validar y convertir datos
+        const bulk = rows
+            .filter(r => r.length >= 4)
+            .map(([agencia, marca, terminal, disponible]) => ({
+                agencia, marca, terminal, disponible: Number(disponible) || 0
+            }));
+        
+        // Verificar si hay datos válidos
+        if (bulk.length === 0) {
+            alert('No se encontraron datos válidos. El formato debe ser: Agencia,Marca,Terminal,Disponible');
+            document.getElementById('btnCargarTerminales').textContent = 'Cargar terminales';
+            document.getElementById('btnCargarTerminales').disabled = false;
+            return;
+        }
+        
+        // Enviar datos al backend
+        console.log(`Enviando ${bulk.length} terminales al backend`);
+        const res = await window.electronAPI.bulkAddTerminales(bulk);
+        
+        // Procesar respuesta
+        if (res?.ok) { 
+            await cargarTerminales(); 
+            alert(`Cargados ${res.count} registros correctamente`);
+            // Limpiar campo después de carga exitosa
+            document.getElementById('terminalesPaste').value = '';
+        } else {
+            alert(`Error al cargar terminales: ${res?.error || 'Desconocido'}`);
+        }
+    } catch (err) {
+        console.error('Error en carga masiva:', err);
+        alert(`Error al procesar datos: ${err.message || 'Desconocido'}`);
+    } finally {
+        // Restaurar botón siempre
+        document.getElementById('btnCargarTerminales').textContent = 'Cargar terminales';
+        document.getElementById('btnCargarTerminales').disabled = false;
+    }
 };
 
 document.getElementById('btnInvRefrescar').onclick = cargarTerminales;
@@ -430,31 +657,52 @@ cargarTerminales();
 // ===== Notas del supervisor =====
 async function cargarNotas() {
     const notasList = document.getElementById('notasList');
-    const notas = await window.electronAPI.listNotas();
-    notasList.innerHTML = '';
-    notas.forEach(nota => {
-        const div = document.createElement('div');
-        div.className = 'nota-item';
-        div.innerHTML = `
-            <div>
-                <b>${nota.autor}</b> <span class="muted">${nota.fecha} ${nota.hora}</span>
-            </div>
-            <div>${nota.texto}</div>
-            <button class="btn btn-outline" onclick="editarNota('${nota.id}')">Editar</button>
-            <button class="btn btn-danger" onclick="borrarNota('${nota.id}')">Borrar</button>
-            <hr>
-        `;
-        notasList.appendChild(div);
-    });
+    if (!notasList) {
+        console.warn('Elemento notasList no encontrado');
+        return; // Salir si no existe el elemento
+    }
+    
+    try {
+        const notas = await window.electronAPI.listNotas();
+        notasList.innerHTML = '';
+        notas.forEach(nota => {
+            const div = document.createElement('div');
+            div.className = 'nota-item';
+            div.innerHTML = `
+                <div>
+                    <b>${nota.autor}</b> <span class="muted">${nota.fecha} ${nota.hora}</span>
+                </div>
+                <div>${nota.texto}</div>
+                <button class="btn btn-outline" onclick="editarNota('${nota.id}')">Editar</button>
+                <button class="btn btn-danger" onclick="borrarNota('${nota.id}')">Borrar</button>
+                <hr>
+            `;
+            notasList.appendChild(div);
+        });
+    } catch (error) {
+        console.error('Error al cargar notas:', error);
+    }
 }
 document.getElementById('btnAgregarNota').onclick = async function() {
-    const texto = document.getElementById('notaNueva').value.trim();
+    const boton = document.getElementById('btnAgregarNota');
+    if (!boton) {
+        console.warn('Elemento btnAgregarNota no encontrado');
+        return;
+    }
+    
+    const notaNueva = document.getElementById('notaNueva');
+    if (!notaNueva) {
+        console.warn('Elemento notaNueva no encontrado');
+        return;
+    }
+    
+    const texto = notaNueva.value.trim();
     if (!texto) return alert('Escribe una nota');
     const fecha = new Date().toISOString().slice(0,10);
     const hora = new Date().toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
     const autor = document.getElementById('supCorreo').value || 'Supervisor';
     await window.electronAPI.addNota({ texto, fecha, hora, autor });
-    document.getElementById('notaNueva').value = '';
+    notaNueva.value = '';
     cargarNotas();
 };
 window.editarNota = async function(id) {
@@ -521,6 +769,88 @@ document.getElementById('btnHistorialPdf').onclick = async function() {
     if (res?.ok) alert(`PDF generado en:\n${res.path}`);
     else alert(`Error al generar PDF: ${res?.error || 'desconocido'}`);
 };
+
+// Manejador para el botón de resetear historial
+document.getElementById('resetHistorialBtn').onclick = async function() {
+    if (confirm("¿Está seguro que desea reiniciar el historial? Esta acción no se puede deshacer.")) {
+        try {
+            const result = await window.electronAPI.resetHistorial();
+            if (result && result.ok) {
+                alert("Historial reiniciado correctamente");
+                // Recargar la lista de entregas
+                await cargarEntregas();
+            } else {
+                alert("Error al reiniciar historial: " + (result?.error || "desconocido"));
+            }
+        } catch (err) {
+            console.error("Error al resetear historial:", err);
+            alert("Error: " + err.message);
+        }
+    }
+};
+
+// Función para ejecutar el diagnóstico del sistema
+async function ejecutarDiagnostico() {
+    try {
+        if (!window.electronAPI || typeof window.electronAPI.diagnostico !== 'function') {
+            alert('Error: API de diagnóstico no disponible');
+            return;
+        }
+        
+        const resultado = await window.electronAPI.diagnostico();
+        console.log('Diagnóstico del sistema:', resultado);
+        alert('Diagnóstico completado. Revisa la consola para más detalles.');
+    } catch (err) {
+        console.error('Error al ejecutar diagnóstico:', err);
+        alert('Error al ejecutar diagnóstico: ' + err.message);
+    }
+}
+
+// Función para ejecutar el diagnóstico de preload
+async function diagnosticarPreload() {
+    try {
+        if (!window.electronAPI || typeof window.electronAPI.debugPreload !== 'function') {
+            alert('Error: API de diagnóstico de preload no disponible');
+            return;
+        }
+        
+        const resultado = await window.electronAPI.debugPreload();
+        console.log('Diagnóstico de preload:', resultado);
+        
+        // Verificar si existe bulkAddTerminales
+        if (window.electronAPI.bulkAddTerminales) {
+            console.log('bulkAddTerminales ESTÁ DISPONIBLE en window.electronAPI');
+        } else {
+            console.error('bulkAddTerminales NO ESTÁ DISPONIBLE en window.electronAPI');
+        }
+        
+        alert('Diagnóstico de preload completado. Revisa la consola para más detalles.');
+    } catch (err) {
+        console.error('Error al ejecutar diagnóstico de preload:', err);
+        alert('Error al ejecutar diagnóstico de preload: ' + err.message);
+    }
+}
+
+// Función para crear nuevo preload y reemplazar el existente
+async function crearNuevoPreload() {
+    try {
+        if (!window.electronAPI || typeof window.electronAPI.crearNuevoPreload !== 'function') {
+            alert('Error: API para crear nuevo preload no disponible');
+            return;
+        }
+        
+        const confirmar = confirm('¿Estás seguro que deseas actualizar el preload.js? La aplicación necesitará reiniciarse.');
+        if (!confirmar) return;
+        
+        const resultado = await window.electronAPI.crearNuevoPreload();
+        console.log('Resultado de crear nuevo preload:', resultado);
+        
+        alert('Se ha creado un nuevo preload.js. Por favor ejecuta el script actualizar-preload.js y reinicia la aplicación.');
+    } catch (err) {
+        console.error('Error al crear nuevo preload:', err);
+        alert('Error al crear nuevo preload: ' + err.message);
+    }
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,100 @@
+// Script para actualizar preload.js
+const fs = require('fs');
+const path = require('path');
+
+// Establecer el directorio de trabajo correcto
+const electronDir = path.join(__dirname, 'Electron');
+console.log(`Directorio de trabajo: ${electronDir}`);
+
+function actualizarPreload() {
+  try {
+    const preloadPath = path.join(electronDir, 'preload.js');
+    const nuevoPreloadPath = path.join(electronDir, 'preload-nuevo.js');
+    const backupPath = path.join(electronDir, `preload-backup-${Date.now()}.js`);
+    
+    // Verificar que el nuevo preload existe
+    if (!fs.existsSync(nuevoPreloadPath)) {
+      console.error('Error: No se encuentra el archivo preload-nuevo.js en:', nuevoPreloadPath);
+      
+      // Crear el archivo preload-nuevo.js con el contenido correcto
+      console.log('Creando un nuevo archivo preload-nuevo.js...');
+      const preloadNuevoContenido = `// Preload script con corrección de nombres de funciones
+const { contextBridge, ipcRenderer } = require('electron');
+
+// Exponer APIs protegidas al front-end a través del puente de contexto
+contextBridge.exposeInMainWorld(
+  'electronAPI', {
+    // API para autenticación
+    login: (email, password) => ipcRenderer.invoke('supervisor:auth', { email, password }),
+    
+    // API para terminales
+    listarTerminales: () => ipcRenderer.invoke('terminales:list'),
+    listTerminales: () => ipcRenderer.invoke('terminales:list'), // Alias para compatibilidad
+    agregarTerminal: (t) => ipcRenderer.invoke('terminales:add', t),
+    eliminarTerminal: (t) => ipcRenderer.invoke('terminales:remove', t),
+    bulkAddTerminales: (bulk) => {
+      console.log('Preload: Llamando a terminales:bulkAdd con', bulk.length, 'terminales');
+      return ipcRenderer.invoke('terminales:bulkAdd', bulk);
+    },
+    
+    // API para agentes
+    listarAgentes: () => ipcRenderer.invoke('agents:list'),
+    listAgents: () => ipcRenderer.invoke('agents:list'), // Alias para compatibilidad
+    agregarAgente: (a) => ipcRenderer.invoke('agents:add', a),
+    eliminarAgente: (correo) => ipcRenderer.invoke('agents:remove', correo),
+    
+    // API para SIMs
+    generarPDFsim: (payload) => ipcRenderer.invoke('sims:generateSend', payload),
+    
+    // API para notas
+    listarNotas: () => ipcRenderer.invoke('notas:list'),
+    listNotas: () => ipcRenderer.invoke('notas:list'), // Alias para compatibilidad
+    agregarNota: (n) => ipcRenderer.invoke('notas:add', n),
+    editarNota: (n) => ipcRenderer.invoke('notas:edit', n),
+    eliminarNota: (id) => ipcRenderer.invoke('notas:remove', id),
+    
+    // API para historial
+    listarHistorial: (correo) => ipcRenderer.invoke('historial:list', correo),
+    listHistorial: (correo) => ipcRenderer.invoke('historial:list', correo), // Alias para compatibilidad
+    generarPDFHistorial: (correo) => ipcRenderer.invoke('historial:pdf', correo),
+    historialPdf: (correo) => ipcRenderer.invoke('historial:pdf', correo), // Alias para compatibilidad
+    resetHistorial: () => ipcRenderer.invoke('historial:reset'),
+    
+    // API para diagnóstico
+    diagnostico: () => ipcRenderer.invoke('sistema:diagnostico'),
+    debugPreload: () => ipcRenderer.invoke('sistema:debugPreload'),
+    crearNuevoPreload: () => ipcRenderer.invoke('sistema:crearNuevoPreload'),
+    
+    // API para sistema
+    invalidarCache: (tipo) => ipcRenderer.invoke('sistema:invalidarCache', tipo),
+    precargar: () => ipcRenderer.invoke('sistema:precargar'),
+    precargarDatos: () => ipcRenderer.invoke('sistema:precargar'), // Alias para compatibilidad
+    estadisticasCache: () => ipcRenderer.invoke('sistema:estadisticasCache'),
+    monitorSnapshot: () => ipcRenderer.invoke('sistema:monitorSnapshot')
+  }
+);`;
+      
+      fs.writeFileSync(nuevoPreloadPath, preloadNuevoContenido);
+      console.log('Archivo preload-nuevo.js creado correctamente');
+    }
+    
+    // Hacer backup del preload actual si existe
+    if (fs.existsSync(preloadPath)) {
+      console.log(`Creando backup del preload actual en ${backupPath}`);
+      fs.copyFileSync(preloadPath, backupPath);
+    }
+    
+    // Copiar el nuevo preload
+    console.log('Actualizando preload.js con la nueva versión...');
+    fs.copyFileSync(nuevoPreloadPath, preloadPath);
+    
+    console.log('¡Preload actualizado con éxito!');
+    console.log('Por favor, reinicia la aplicación para que los cambios surtan efecto.');
+  } catch (err) {
+    console.error('Error durante la actualización:', err);
+    process.exit(1);
+  }
+}
+
+// Ejecutar actualización
+actualizarPreload();

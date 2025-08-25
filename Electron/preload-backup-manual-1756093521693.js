@@ -1,0 +1,51 @@
+// Preload script
+const { contextBridge, ipcRenderer } = require('electron');
+
+// Exponer APIs protegidas al front-end a través del puente de contexto
+contextBridge.exposeInMainWorld(
+  'electronAPI', {
+    // API para autenticación
+    login: (email, password) => ipcRenderer.invoke('supervisor:auth', { email, password }),
+    
+    // API para terminales
+    listarTerminales: () => ipcRenderer.invoke('terminales:list'),
+    agregarTerminal: (t) => ipcRenderer.invoke('terminales:add', t),
+    eliminarTerminal: (t) => ipcRenderer.invoke('terminales:remove', t),
+    bulkAddTerminales: (bulk) => {
+      console.log('Preload: Llamando a terminales:bulkAdd con', bulk.length, 'terminales');
+      return ipcRenderer.invoke('terminales:bulkAdd', bulk);
+    },
+    
+    // API para agentes
+    listarAgentes: () => ipcRenderer.invoke('agents:list'),
+    agregarAgente: (a) => ipcRenderer.invoke('agents:add', a),
+    eliminarAgente: (correo) => ipcRenderer.invoke('agents:remove', correo),
+    
+    // API para SIMs
+    generarPDFsim: (payload) => ipcRenderer.invoke('sims:generateSend', payload),
+    
+    // API para notas
+    listarNotas: () => ipcRenderer.invoke('notas:list'),
+    agregarNota: (n) => ipcRenderer.invoke('notas:add', n),
+    editarNota: (n) => ipcRenderer.invoke('notas:edit', n),
+    eliminarNota: (id) => ipcRenderer.invoke('notas:remove', id),
+    
+    // API para historial
+    listarHistorial: (correo) => ipcRenderer.invoke('historial:list', correo),
+    listHistorial: (correo) => ipcRenderer.invoke('historial:list', correo), // Alias para compatibilidad
+    generarPDFHistorial: (correo) => ipcRenderer.invoke('historial:pdf', correo),
+    historialPdf: (correo) => ipcRenderer.invoke('historial:pdf', correo), // Alias para compatibilidad
+    resetHistorial: () => ipcRenderer.invoke('historial:reset'),
+    
+    // API para diagnóstico
+    diagnostico: () => ipcRenderer.invoke('sistema:diagnostico'),
+    debugPreload: () => ipcRenderer.invoke('sistema:debugPreload'),
+    crearNuevoPreload: () => ipcRenderer.invoke('sistema:crearNuevoPreload'),
+    
+    // API para sistema
+    invalidarCache: (tipo) => ipcRenderer.invoke('sistema:invalidarCache', tipo),
+    precargarDatos: () => ipcRenderer.invoke('sistema:precargar'),
+    estadisticasCache: () => ipcRenderer.invoke('sistema:estadisticasCache'),
+    monitorSnapshot: () => ipcRenderer.invoke('sistema:monitorSnapshot')
+  }
+);

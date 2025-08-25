@@ -1,0 +1,65 @@
+/* Estilos Neon para SimKManager */
+.neon-text {
+    text-shadow: 0 0 5px #43b02a, 0 0 10px #43b02a, 0 0 15px #43b02a;
+    color: #fff;
+}
+
+.neon-border {
+    box-shadow: 0 0 5px #43b02a, 0 0 10px #43b02a;
+    border: 1px solid #43b02a;
+}
+
+.turbo-indicator {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(67, 176, 42, 0.2);
+    color: #43b02a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 0 10px #43b02a;
+}
+
+.turbo-indicator.visible {
+    opacity: 1;
+}
+
+/* Botones con efecto neon */
+.btn-neon {
+    background-color: transparent;
+    border: 1px solid #43b02a;
+    color: #43b02a;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.btn-neon:hover {
+    background-color: #43b02a;
+    color: #fff;
+    box-shadow: 0 0 10px #43b02a, 0 0 20px #43b02a;
+}
+
+.btn-neon:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(67, 176, 42, 0.4), transparent);
+    transition: all 0.5s;
+}
+
+.btn-neon:hover:before {
+    left: 100%;
+}
