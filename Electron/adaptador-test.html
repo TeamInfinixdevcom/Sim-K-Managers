@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test del Adaptador Simple</title>
+    
+    <!-- Cargar el adaptador simplificado -->
+    <script src="compatibility-adapter-simple.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            color: #2196F3;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .test-panel {
+            background: #f5f5f5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #4CAF50;
+        }
+        
+        .error {
+            color: #f44336;
+        }
+        
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        button:hover {
+            background: #0b7dda;
+        }
+        
+        pre {
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 200px;
+        }
+        
+        .result-container {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test del Adaptador Simple</h1>
+    
+    <div class="test-panel">
+        <h2>Estado del adaptador</h2>
+        <p class="status" id="adaptador-status">Verificando...</p>
+        <button onclick="verificarAdaptador()">Verificar estado</button>
+        <div class="result-container">
+            <pre id="adaptador-info"></pre>
+        </div>
+    </div>
+    
+    <div class="test-panel">
+        <h2>API disponible</h2>
+        <p class="status" id="api-status">Verificando...</p>
+        <button onclick="testAPI()">Verificar API</button>
+        <div class="result-container">
+            <pre id="api-info"></pre>
+        </div>
+    </div>
+    
+    <div class="test-panel">
+        <h2>Pruebas de funciones</h2>
+        <button onclick="testListTerminales()">listTerminales()</button>
+        <button onclick="testListAgents()">listAgents()</button>
+        <button onclick="testListNotas()">listNotas()</button>
+        <button onclick="testListHistorial()">listHistorial()</button>
+        <div class="result-container">
+            <pre id="test-result"></pre>
+        </div>
+    </div>
+    
+    <div class="test-panel">
+        <h2>Notificación</h2>
+        <button onclick="testNotification('info', 'Mensaje de información')">Notificación Info</button>
+        <button onclick="testNotification('success', 'Operación exitosa')">Notificación Éxito</button>
+        <button onclick="testNotification('error', 'Error en la operación')">Notificación Error</button>
+    </div>
+    
+    <script>
+        // Función para actualizar resultados
+        function actualizarResultado(elementId, data, success = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+            
+            if (success) {
+                element.classList.add('success');
+                element.classList.remove('error');
+            } else {
+                element.classList.add('error');
+                element.classList.remove('success');
+            }
+        }
+        
+        // Verificar estado del adaptador
+        function verificarAdaptador() {
+            const status = document.getElementById('adaptador-status');
+            
+            try {
+                const info = {
+                    inicializado: window.compatibilityAdapter && window.compatibilityAdapter.isInitialized(),
+                    version: window.compatibilityAdapter && window.compatibilityAdapter.version,
+                    apiDisponible: !!window.api,
+                    electronAPIDisponible: !!window.electronAPI,
+                    funcionesGlobalesDisponibles: {
+                        listTerminales: typeof window.listTerminales === 'function',
+                        listAgents: typeof window.listAgents === 'function',
+                        listNotas: typeof window.listNotas === 'function',
+                        listHistorial: typeof window.listHistorial === 'function'
+                    }
+                };
+                
+                if (info.inicializado) {
+                    status.textContent = '✓ Adaptador inicializado correctamente';
+                    status.className = 'status success';
+                } else {
+                    status.textContent = '✗ Adaptador no inicializado';
+                    status.className = 'status error';
+                }
+                
+                actualizarResultado('adaptador-info', info, info.inicializado);
+            } catch (error) {
+                status.textContent = '✗ Error al verificar adaptador';
+                status.className = 'status error';
+                actualizarResultado('adaptador-info', { error: error.message }, false);
+            }
+        }
+        
+        // Test de API
+        function testAPI() {
+            const status = document.getElementById('api-status');
+            
+            try {
+                const apiFunctions = [];
+                
+                if (window.api) {
+                    for (const key in window.api) {
+                        if (typeof window.api[key] === 'function') {
+                            apiFunctions.push(key);
+                        }
+                    }
+                }
+                
+                const info = {
+                    apiDisponible: !!window.api,
+                    totalFunciones: apiFunctions.length,
+                    funciones: apiFunctions
+                };
+                
+                if (info.apiDisponible && info.totalFunciones > 0) {
+                    status.textContent = `✓ API disponible con ${info.totalFunciones} funciones`;
+                    status.className = 'status success';
+                } else {
+                    status.textContent = '✗ API no disponible o sin funciones';
+                    status.className = 'status error';
+                }
+                
+                actualizarResultado('api-info', info, info.apiDisponible && info.totalFunciones > 0);
+            } catch (error) {
+                status.textContent = '✗ Error al verificar API';
+                status.className = 'status error';
+                actualizarResultado('api-info', { error: error.message }, false);
+            }
+        }
+        
+        // Test de listTerminales
+        async function testListTerminales() {
+            try {
+                if (typeof window.listTerminales !== 'function') {
+                    throw new Error('Función listTerminales no disponible');
+                }
+                
+                const terminales = await window.listTerminales();
+                actualizarResultado('test-result', {
+                    funcion: 'listTerminales',
+                    resultado: terminales,
+                    total: terminales.length
+                }, true);
+            } catch (error) {
+                actualizarResultado('test-result', {
+                    funcion: 'listTerminales',
+                    error: error.message
+                }, false);
+            }
+        }
+        
+        // Test de listAgents
+        async function testListAgents() {
+            try {
+                if (typeof window.listAgents !== 'function') {
+                    throw new Error('Función listAgents no disponible');
+                }
+                
+                const agentes = await window.listAgents();
+                actualizarResultado('test-result', {
+                    funcion: 'listAgents',
+                    resultado: agentes,
+                    total: agentes.length
+                }, true);
+            } catch (error) {
+                actualizarResultado('test-result', {
+                    funcion: 'listAgents',
+                    error: error.message
+                }, false);
+            }
+        }
+        
+        // Test de listNotas
+        async function testListNotas() {
+            try {
+                if (typeof window.listNotas !== 'function') {
+                    throw new Error('Función listNotas no disponible');
+                }
+                
+                const notas = await window.listNotas();
+                actualizarResultado('test-result', {
+                    funcion: 'listNotas',
+                    resultado: notas,
+                    total: notas.length
+                }, true);
+            } catch (error) {
+                actualizarResultado('test-result', {
+                    funcion: 'listNotas',
+                    error: error.message
+                }, false);
+            }
+        }
+        
+        // Test de listHistorial
+        async function testListHistorial() {
+            try {
+                if (typeof window.listHistorial !== 'function') {
+                    throw new Error('Función listHistorial no disponible');
+                }
+                
+                const historial = await window.listHistorial();
+                actualizarResultado('test-result', {
+                    funcion: 'listHistorial',
+                    resultado: historial,
+                    total: historial.length
+                }, true);
+            } catch (error) {
+                actualizarResultado('test-result', {
+                    funcion: 'listHistorial',
+                    error: error.message
+                }, false);
+            }
+        }
+        
+        // Test de notificación
+        function testNotification(tipo, mensaje) {
+            if (typeof window.notificacion === 'function') {
+                window.notificacion(tipo, mensaje);
+            } else {
+                alert(`Función notificacion no disponible. Mensaje: ${mensaje}`);
+            }
+        }
+        
+        // Ejecutar verificaciones automáticamente después de un momento
+        setTimeout(() => {
+            verificarAdaptador();
+            testAPI();
+        }, 1000);
+    </script>
+</body>
+</html>

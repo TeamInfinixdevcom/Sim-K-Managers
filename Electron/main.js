@@ -10,6 +10,9 @@ let mainWindow;
 // Importar módulo inventario
 let mainInventario;
 
+// Cerca del inicio donde se cargan los módulos
+const agentesUtils = require('./agentes-utils');
+
 function createWindow() {
     console.log('[MAIN] Creando ventana principal...');
     
@@ -41,8 +44,13 @@ function createWindow() {
         
         // Ahora registramos los manejadores manualmente
         if (typeof mainInventario.registrarManejadoresIPC === 'function') {
-            mainInventario.registrarManejadoresIPC();
-            console.log('[MAIN] Manejadores IPC registrados correctamente');
+            // Pasar ipcMain explícitamente
+            const resultado = mainInventario.registrarManejadoresIPC(ipcMain);
+            if (resultado) {
+                console.log('[MAIN] Módulo de inventario cargado correctamente');
+            } else {
+                console.log('[MAIN] Módulo de inventario: error al registrar manejadores');
+            }
         } else {
             console.log('[MAIN] Módulo de inventario cargado pero la función registrarManejadoresIPC no está disponible');
         }
@@ -172,3 +180,40 @@ app.on('activate', function () {
         createWindow();
     }
 });
+
+// Inicializar diagnóstico IPC primero
+let ipcDiag;
+try {
+  console.log('[MAIN] Inicializando diagnóstico de IPC...');
+  const ipcDiagnostico = require('./ipc-diagnostico');
+  ipcDiag = ipcDiagnostico.inicializar();
+  console.log('[MAIN] Diagnóstico de IPC inicializado correctamente');
+} catch (error) {
+  console.error('[MAIN] Error al inicializar diagnóstico IPC:', error);
+}
+
+// Verificar y reparar archivos de datos
+try {
+  console.log('[MAIN] Verificando integridad de archivos de datos...');
+  const restaurador = require('./restaurar');
+  restaurador.verificarYReparar();
+  console.log('[MAIN] Verificación de archivos completada');
+} catch (error) {
+  console.error('[MAIN] Error al verificar archivos:', error);
+}
+
+// En la sección donde se inicializan los módulos
+console.log('[MAIN] Cargando módulo de agentes optimizado...');
+try {
+  // Inicializar la caché de agentes al inicio
+  agentesUtils.obtenerAgentes()
+    .then(agentes => {
+      console.log(`[AGENTES] Caché inicializada con ${agentes.length} agentes`);
+    })
+    .catch(err => {
+      console.error('[AGENTES] Error al inicializar caché:', err);
+    });
+  console.log('[MAIN] Módulo de agentes optimizado cargado correctamente');
+} catch (error) {
+  console.error('[MAIN] Error al cargar módulo de agentes optimizado:', error);
+}

@@ -1,0 +1,131 @@
+{
+  "timestamp": 1756269532113,
+  "fecha": "2025-08-27T04:38:52.113Z",
+  "canales": {
+    "total": 26,
+    "detalle": {
+      "sistema:ipcDiagnostico": {
+        "registrado": true,
+        "timestamp": 1756269472109
+      },
+      "sistema:repararIPC": {
+        "registrado": true,
+        "timestamp": 1756269472109
+      },
+      "sistema:probarCanal": {
+        "registrado": true,
+        "timestamp": 1756269472109
+      },
+      "sistema:invalidarCache": {
+        "registrado": true,
+        "timestamp": 1756269472361
+      },
+      "sistema:precargar": {
+        "registrado": true,
+        "timestamp": 1756269472361,
+        "ultimaEjecucion": 1756269472999,
+        "ultimoResultado": "éxito"
+      },
+      "sistema:monitorSnapshot": {
+        "registrado": true,
+        "timestamp": 1756269472436
+      },
+      "sistema:estadisticasCache": {
+        "registrado": true,
+        "timestamp": 1756269472437
+      },
+      "supervisor:auth": {
+        "registrado": true,
+        "timestamp": 1756269472464
+      },
+      "agents:list": {
+        "registrado": true,
+        "timestamp": 1756269472437
+      },
+      "agents:add": {
+        "registrado": true,
+        "timestamp": 1756269472437
+      },
+      "agents:remove": {
+        "registrado": true,
+        "timestamp": 1756269472438
+      },
+      "terminales:list": {
+        "registrado": true,
+        "timestamp": 1756269472438,
+        "ultimaEjecucion": 1756269472943,
+        "ultimoResultado": "éxito"
+      },
+      "terminales:add": {
+        "registrado": true,
+        "timestamp": 1756269472438
+      },
+      "terminales:remove": {
+        "registrado": true,
+        "timestamp": 1756269472452
+      },
+      "terminales:bulkAdd": {
+        "registrado": true,
+        "timestamp": 1756269472453
+      },
+      "notas:list": {
+        "registrado": true,
+        "timestamp": 1756269472453
+      },
+      "notas:add": {
+        "registrado": true,
+        "timestamp": 1756269472454
+      },
+      "notas:edit": {
+        "registrado": true,
+        "timestamp": 1756269472454
+      },
+      "notas:remove": {
+        "registrado": true,
+        "timestamp": 1756269472455
+      },
+      "sims:generateSend": {
+        "registrado": true,
+        "timestamp": 1756269472455
+      },
+      "historial:reset": {
+        "registrado": true,
+        "timestamp": 1756269472455
+      },
+      "historial:list": {
+        "registrado": true,
+        "timestamp": 1756269472456,
+        "ultimaEjecucion": 1756269472951,
+        "ultimoResultado": "éxito"
+      },
+      "historial:pdf": {
+        "registrado": true,
+        "timestamp": 1756269472456
+      },
+      "sistema:diagnostico": {
+        "registrado": true,
+        "timestamp": 1756269472491
+      },
+      "sistema:debugPreload": {
+        "registrado": true,
+        "timestamp": 1756269472493
+      },
+      "sistema:crearNuevoPreload": {
+        "registrado": true,
+        "timestamp": 1756269472493
+      }
+    }
+  },
+  "llamadas": {
+    "total": 4,
+    "detalle": {
+      "terminales:list": 1,
+      "historial:list": 1,
+      "sistema:precargar": 2
+    }
+  },
+  "errores": {
+    "total": 0,
+    "detalle": {}
+  }
+}

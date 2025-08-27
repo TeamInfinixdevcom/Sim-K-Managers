@@ -102,19 +102,6 @@ window.setOnClick = function(id, handler) {
     });
 };
 
-// Sobrescribir getElementById para mayor seguridad
-const originalGetElementById = document.getElementById;
-document.getElementById = function(id) {
-    const element = originalGetElementById.call(document, id);
-    if (!element) {
-        console.warn(`[DOM-PROTECTOR] Aviso: getElementById('${id}') devolvió null`);
-    }
-    return element;
-};
-
-// No parchamos los prototipos nativos ya que puede causar "Illegal invocation"
-// En su lugar, proporcionamos funciones de utilidad seguras
-
 // Crear versiones seguras de métodos comunes
 window.safeInnerHTML = function(element, html) {
     if (!element) return false;

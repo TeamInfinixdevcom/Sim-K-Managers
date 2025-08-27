@@ -1,0 +1,123 @@
+/* Estilos para la interfaz de agentes */
+.agente-form {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Estilos para validación visual */
+.campo-invalido {
+    border-color: #e53935 !important;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2) !important;
+}
+
+.campo-valido {
+    border-color: #43b02a !important;
+    box-shadow: 0 0 0 2px rgba(67, 176, 42, 0.2) !important;
+}
+
+.agente-form h3 {
+    margin-top: 0;
+    color: #43b02a;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    border-color: #43b02a;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(67, 176, 42, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, opacity 0.3s;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: #43b02a;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #3a9924;
+}
+
+.btn-danger {
+    background-color: #e53935;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c62828;
+}
+
+/* Animaciones para mejorar feedback */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.notificacion {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Mejoras de accesibilidad */
+input:focus:invalid {
+    border-color: #e53935;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2);
+}
+
+/* Indicador de carga */
+.loading-indicator {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

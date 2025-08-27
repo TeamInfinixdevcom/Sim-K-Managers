@@ -178,5 +178,25 @@
     "contenido": "89506010125111425362",
     "pdf": "C:\\Users\\ruben\\Downloads\\SIM-Kolbi-crivera-2025-08-25.pdf",
     "id": "1756099669609"
+  },
+  {
+    "agente": "",
+    "usuario": "",
+    "correo": "",
+    "fecha": "2025-08-26",
+    "hora": "09:32:17 p. m.",
+    "contenido": "89506010125111418698\n89506010125111419092\n89506010125111418664\n89506010125111418656\n89506010125111425024\n89506010125111425016",
+    "pdf": "C:\\Users\\ruben\\Downloads\\SIM-Kolbi-usuario-2025-08-26.pdf",
+    "id": "1756179137495"
+  },
+  {
+    "agente": "Jason Daniel Lopez Guzman",
+    "usuario": "jlopezgu",
+    "correo": "jlopezgu@ice.go.cr",
+    "fecha": "2025-08-27",
+    "hora": "10:23:35 p. m.",
+    "contenido": "89506010125111418656\n89506010125111425024\n89506010125111425016",
+    "pdf": "C:\\Users\\ruben\\Downloads\\SIM-Kolbi-jlopezgu-2025-08-27.pdf",
+    "id": "1756268615775"
   }
 ]

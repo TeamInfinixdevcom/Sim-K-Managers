@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de API - Sim Kmanager</title>
+    <!-- Cargar primero el puente API universal si existe -->
+    <script src="universal-api-bridge.js"></script>
+    <!-- Cargar el adaptador de compatibilidad -->
+    <script src="compatibility-adapter.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .test-button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .test-button:hover {
+            background: #45a049;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-left: 4px solid #2196F3;
+            overflow: auto;
+            max-height: 200px;
+        }
+        
+        .success {
+            border-left-color: #4CAF50;
+        }
+        
+        .error {
+            border-left-color: #f44336;
+        }
+        
+        pre {
+            margin: 0;
+        }
+        
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de API - Sim Kmanager</h1>
+    
+    <div class="test-section">
+        <h2>Estado de la API</h2>
+        <p class="status" id="api-status">Cargando...</p>
+        <button class="test-button" onclick="checkAPI()">Verificar API</button>
+        <div class="result" id="api-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test de Terminales</h2>
+        <button class="test-button" onclick="testTerminales()">Probar listTerminales()</button>
+        <button class="test-button" onclick="testListarTerminales()">Probar listarTerminales()</button>
+        <div class="result" id="terminales-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test de Agentes</h2>
+        <button class="test-button" onclick="testAgents()">Probar listAgents()</button>
+        <button class="test-button" onclick="testListarAgentes()">Probar listarAgentes()</button>
+        <button class="test-button" onclick="testObtenerAgentes()">Probar obtenerAgentes()</button>
+        <div class="result" id="agentes-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test de Notas</h2>
+        <button class="test-button" onclick="testNotas()">Probar listNotas()</button>
+        <button class="test-button" onclick="testListarNotas()">Probar listarNotas()</button>
+        <div class="result" id="notas-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test de Historial</h2>
+        <button class="test-button" onclick="testHistorial()">Probar listHistorial()</button>
+        <button class="test-button" onclick="testListarHistorial()">Probar listarHistorial()</button>
+        <div class="result" id="historial-result"></div>
+    </div>
+    
+    <script>
+        // Función para mostrar resultados
+        function showResult(elementId, data, success = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            
+            if (success) {
+                element.classList.add('success');
+                element.classList.remove('error');
+            } else {
+                element.classList.add('error');
+                element.classList.remove('success');
+            }
+        }
+        
+        // Verificar estado de la API
+        function checkAPI() {
+            const apiResult = document.getElementById('api-result');
+            
+            try {
+                const apiStatus = {
+                    electronAPI: !!window.electronAPI,
+                    api: !!window.api,
+                    adaptadorInicializado: !!window._adaptadorInicializado,
+                    funciones: {
+                        listTerminales: typeof window.listTerminales === 'function',
+                        listAgents: typeof window.listAgents === 'function',
+                        listNotas: typeof window.listNotas === 'function',
+                        listHistorial: typeof window.listHistorial === 'function',
+                    }
+                };
+                
+                if (window.electronAPI) {
+                    apiStatus.electronAPIFunciones = Object.keys(window.electronAPI)
+                        .filter(key => typeof window.electronAPI[key] === 'function')
+                        .reduce((obj, key) => {
+                            obj[key] = true;
+                            return obj;
+                        }, {});
+                }
+                
+                if (window.api) {
+                    apiStatus.apiFunciones = Object.keys(window.api)
+                        .filter(key => typeof window.api[key] === 'function')
+                        .reduce((obj, key) => {
+                            obj[key] = true;
+                            return obj;
+                        }, {});
+                }
+                
+                document.getElementById('api-status').textContent = 
+                    apiStatus.electronAPI ? 'API disponible' : 'API no disponible';
+                
+                showResult('api-result', apiStatus, apiStatus.electronAPI);
+            } catch (error) {
+                showResult('api-result', { error: error.message }, false);
+            }
+        }
+        
+        // Test de terminales
+        async function testTerminales() {
+            try {
+                if (typeof window.listTerminales !== 'function') {
+                    throw new Error('Función listTerminales no disponible');
+                }
+                
+                const terminales = await window.listTerminales();
+                showResult('terminales-result', terminales);
+            } catch (error) {
+                showResult('terminales-result', { error: error.message }, false);
+            }
+        }
+        
+        async function testListarTerminales() {
+            try {
+                if (!window.api || typeof window.api.listarTerminales !== 'function') {
+                    throw new Error('Función api.listarTerminales no disponible');
+                }
+                
+                const terminales = await window.api.listarTerminales();
+                showResult('terminales-result', terminales);
+            } catch (error) {
+                showResult('terminales-result', { error: error.message }, false);
+            }
+        }
+        
+        // Test de agentes
+        async function testAgents() {
+            try {
+                if (typeof window.listAgents !== 'function') {
+                    throw new Error('Función listAgents no disponible');
+                }
+                
+                const agentes = await window.listAgents();
+                showResult('agentes-result', agentes);
+            } catch (error) {
+                showResult('agentes-result', { error: error.message }, false);
+            }
+        }
+        
+        async function testListarAgentes() {
+            try {
+                if (!window.api || typeof window.api.listarAgentes !== 'function') {
+                    throw new Error('Función api.listarAgentes no disponible');
+                }
+                
+                const agentes = await window.api.listarAgentes();
+                showResult('agentes-result', agentes);
+            } catch (error) {
+                showResult('agentes-result', { error: error.message }, false);
+            }
+        }
+        
+        async function testObtenerAgentes() {
+            try {
+                if (!window.api || typeof window.api.obtenerAgentes !== 'function') {
+                    throw new Error('Función api.obtenerAgentes no disponible');
+                }
+                
+                const agentes = await window.api.obtenerAgentes();
+                showResult('agentes-result', agentes);
+            } catch (error) {
+                showResult('agentes-result', { error: error.message }, false);
+            }
+        }
+        
+        // Test de notas
+        async function testNotas() {
+            try {
+                if (typeof window.listNotas !== 'function') {
+                    throw new Error('Función listNotas no disponible');
+                }
+                
+                const notas = await window.listNotas();
+                showResult('notas-result', notas);
+            } catch (error) {
+                showResult('notas-result', { error: error.message }, false);
+            }
+        }
+        
+        async function testListarNotas() {
+            try {
+                if (!window.api || typeof window.api.listarNotas !== 'function') {
+                    throw new Error('Función api.listarNotas no disponible');
+                }
+                
+                const notas = await window.api.listarNotas();
+                showResult('notas-result', notas);
+            } catch (error) {
+                showResult('notas-result', { error: error.message }, false);
+            }
+        }
+        
+        // Test de historial
+        async function testHistorial() {
+            try {
+                if (typeof window.listHistorial !== 'function') {
+                    throw new Error('Función listHistorial no disponible');
+                }
+                
+                const historial = await window.listHistorial();
+                showResult('historial-result', historial);
+            } catch (error) {
+                showResult('historial-result', { error: error.message }, false);
+            }
+        }
+        
+        async function testListarHistorial() {
+            try {
+                if (!window.api || typeof window.api.listarHistorial !== 'function') {
+                    throw new Error('Función api.listarHistorial no disponible');
+                }
+                
+                const historial = await window.api.listarHistorial();
+                showResult('historial-result', historial);
+            } catch (error) {
+                showResult('historial-result', { error: error.message }, false);
+            }
+        }
+        
+        // Verificar API automáticamente al cargar
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkAPI, 1000);
+        });
+    </script>
+</body>
+</html>

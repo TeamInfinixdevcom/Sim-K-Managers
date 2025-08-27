@@ -106,3 +106,98 @@ rl.question('\n¿Qué copia de seguridad desea restaurar? (Ingrese el número o 
     rl.close();
   });
 });
+
+// Script para verificar y restaurar archivos de datos
+// Archivos a verificar
+const archivos = [
+    { 
+        ruta: path.join(__dirname, 'agents.json'),
+        valorPorDefecto: '[]',
+        descripcion: 'Archivo de agentes'
+    },
+    { 
+        ruta: path.join(__dirname, 'notas.json'),
+        valorPorDefecto: '[]',
+        descripcion: 'Archivo de notas'
+    },
+    { 
+        ruta: path.join(__dirname, 'historial_entregas.json'),
+        valorPorDefecto: '[]',
+        descripcion: 'Archivo de historial'
+    },
+    { 
+        ruta: path.join(__dirname, 'terminales.json'),
+        valorPorDefecto: '[]',
+        descripcion: 'Archivo de terminales'
+    },
+        { 
+            ruta: path.join(__dirname, 'supervisores.json'),
+            valorPorDefecto: '{"supervisores":[]}',
+            descripcion: 'Archivo de supervisores'
+        }
+    ];
+
+// Función para verificar y reparar archivos
+function verificarYReparar() {
+    let archivosReparados = 0;
+    let archivosCreados = 0;
+    
+    console.log('\nVerificando archivos de datos...');
+    
+    archivos.forEach(archivo => {
+        try {
+            console.log(`Verificando ${archivo.descripcion}...`);
+            
+            // Verificar existencia
+            if (!fs.existsSync(archivo.ruta)) {
+                console.log(`${archivo.descripcion} no existe. Creando...`);
+                fs.writeFileSync(archivo.ruta, archivo.valorPorDefecto, 'utf8');
+                archivosCreados++;
+                console.log(`${archivo.descripcion} creado correctamente.`);
+                return;
+            }
+            
+            // Leer contenido
+            const contenido = fs.readFileSync(archivo.ruta, 'utf8');
+            
+            // Verificar que sea JSON válido
+            try {
+                if (contenido.trim() === '') {
+                    throw new Error('Archivo vacío');
+                }
+                JSON.parse(contenido);
+                console.log(`${archivo.descripcion} está en buen estado.`);
+            } catch (error) {
+                console.log(`${archivo.descripcion} está dañado. Reparando...`);
+                fs.writeFileSync(archivo.ruta, archivo.valorPorDefecto, 'utf8');
+                archivosReparados++;
+                console.log(`${archivo.descripcion} reparado correctamente.`);
+            }
+        } catch (error) {
+            console.error(`Error al procesar ${archivo.descripcion}:`, error);
+        }
+    });
+    
+    console.log(`\nResumen:`);
+    console.log(`- Archivos verificados: ${archivos.length}`);
+    console.log(`- Archivos reparados: ${archivosReparados}`);
+    console.log(`- Archivos creados: ${archivosCreados}`);
+    
+    return {
+        reparados: archivosReparados,
+        creados: archivosCreados,
+        total: archivos.length
+    };
+}
+
+// Exportar funciones
+module.exports = {
+    verificarYReparar
+};
+
+// Si se ejecuta directamente desde la línea de comandos
+if (require.main === module) {
+    console.log('=== VERIFICACIÓN Y REPARACIÓN DE ARCHIVOS ===');
+    verificarYReparar();
+    console.log('\nProceso completado.');
+}

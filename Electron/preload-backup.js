@@ -1,5 +1,13 @@
 // Preload script con corrección de nombres de funciones
 const { contextBridge, ipcRenderer } = require('electron');
+const path = require('path');
+const fs = require('fs');
+const agentesUtils = require('./agentes-utils');
+
+// Verificación de errores de ipcRenderer
+if (!ipcRenderer || typeof ipcRenderer.invoke !== 'function') {
+  console.error('[PRELOAD] Error: ipcRenderer no está disponible o no tiene método invoke');
+}
 
 // Exponer APIs protegidas al front-end
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -20,7 +28,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // API para agentes
   listarAgentes: () => ipcRenderer.invoke('agents:list'),
-  listAgents: () => ipcRenderer.invoke('agents:list'),
+  listAgents: () => {
+    try {
+        const agentsPath = path.resolve(__dirname, 'agents.json');
+        const data = fs.readFileSync(agentsPath, 'utf8');
+        const json = JSON.parse(data);
+        return Array.isArray(json.agents) ? json.agents : [];
+    } catch (err) {
+        console.error('Error leyendo agents.json:', err);
+        return [];
+    }
+  },
   agregarAgente: (a) => ipcRenderer.invoke('agents:add', a),
   addAgent: (a) => ipcRenderer.invoke('agents:add', a),
   eliminarAgente: (correo) => ipcRenderer.invoke('agents:remove', correo),
@@ -57,5 +75,35 @@ contextBridge.exposeInMainWorld('electronAPI', {
   precargar: () => ipcRenderer.invoke('sistema:precargar'),
   precargarDatos: () => ipcRenderer.invoke('sistema:precargar'),
   estadisticasCache: () => ipcRenderer.invoke('sistema:estadisticasCache'),
-  monitorSnapshot: () => ipcRenderer.invoke('sistema:monitorSnapshot')
+  monitorSnapshot: () => ipcRenderer.invoke('sistema:monitorSnapshot'),
+  
+  // Funciones optimizadas para agentes
+  guardarAgente: async (datos) => {
+    try {
+        return await agentesUtils.guardarAgente(datos);
+    } catch (error) {
+        console.error('Error en guardarAgente:', error);
+        return { exito: false, mensaje: 'Error en la operación' };
+    }
+  },
+  
+  eliminarAgente: async (correo) => {
+    try {
+        return await agentesUtils.eliminarAgentePorCorreo(correo);
+    } catch (error) {
+        console.error('Error en eliminarAgente:', error);
+        return { exito: false, mensaje: 'Error en la operación' };
+    }
+  },
+  
+  obtenerAgentes: async () => {
+    try {
+        return await agentesUtils.obtenerAgentes();
+    } catch (error) {
+        console.error('Error en obtenerAgentes:', error);
+        return [];
+    }
+  },
 });
+
+// REVISIÓN: Verificar si window.electronAPI.listAgents está correctamente definida y enlazada, y si accede bien a agents.json

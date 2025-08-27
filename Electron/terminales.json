@@ -1,14 +1,20 @@
 [
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "OPPO",
-    "terminal": "OPPO A5 PRO 5G 256GB CAFÉ",
-    "disponible": 17
+    "marca": "MOTOROLA",
+    "terminal": "MOTOROLA MOTO WATCH FIT GRIS CON VERDE",
+    "disponible": 12
   },
   {
     "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
-    "marca": "OPPO",
-    "terminal": "OPPO A5 PRO 5G 256GB ROSA",
-    "disponible": 6
+    "marca": "MOTOROLA",
+    "terminal": "MOTOROLA RAZR 50 ULTRA 512GB AZUL",
+    "disponible": 1
+  },
+  {
+    "agencia": "AGENCIA CALLE TERCERA (AV. 2DA.)",
+    "marca": "MOTOROLA",
+    "terminal": "MOTOROLA RAZR 50 ULTRA 512GB VERDE NORI",
+    "disponible": 1
   }
 ]

@@ -52,31 +52,7 @@ console.log("[ADAPTADOR-SIMPLE] Inicializando adaptador de compatibilidad...");
                 'listHistorial'
             ];
             
-            // PRIORIDAD CRÍTICA: Garantizar que listAgents esté disponible globalmente
-            // Esta función es esencial para el funcionamiento de la aplicación
-            if (electronAPI.listAgents) {
-                window.listAgents = electronAPI.listAgents;
-                console.log(`[ADAPTADOR-SIMPLE] Función crítica listAgents registrada directamente`);
-            } else if (electronAPI.listarAgentes) {
-                window.listAgents = electronAPI.listarAgentes;
-                console.log(`[ADAPTADOR-SIMPLE] Función crítica listAgents registrada desde listarAgentes`);
-            } else if (electronAPI.obtenerAgentes) {
-                window.listAgents = electronAPI.obtenerAgentes;
-                console.log(`[ADAPTADOR-SIMPLE] Función crítica listAgents registrada desde obtenerAgentes`);
-            } else {
-                console.error(`[ADAPTADOR-SIMPLE] ERROR CRÍTICO: No se encontró función para listar agentes`);
-                // Crear versión simulada pero que muestra un error
-                window.listAgents = async function() {
-                    console.error(`[ADAPTADOR-SIMPLE] ERROR: No hay implementación de listAgents disponible`);
-                    return [];
-                };
-            }
-            
-            // Procesar el resto de funciones globales
             funcionesGlobales.forEach(nombre => {
-                // Saltar listAgents que ya fue procesado
-                if (nombre === 'listAgents') return;
-                
                 if (!window[nombre] && electronAPI[nombre]) {
                     window[nombre] = electronAPI[nombre];
                     console.log(`[ADAPTADOR-SIMPLE] Función global ${nombre} registrada`);
